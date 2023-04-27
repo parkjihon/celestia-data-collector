@@ -18,12 +18,14 @@ func BlobParser(sBlob Blob, strCoreHeight string) {
 	decodedMshdBlob, err := base64.StdEncoding.DecodeString(mshdBlob)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	var block types.Block
 	err = block.UnmarshalBinary(decodedMshdBlob)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	// fmt.Println(sBlob.NamespaceID)
