@@ -1,0 +1,157 @@
+package blob
+
+import (
+	"encoding/base64"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+
+	"github.com/rollkit/rollkit/types"
+
+	//"google.golang.org/protobuf/encoding/protowire"
+	//"github.com/cosmos/cosmos-sdk/codec/unknownproto"
+	//sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	//github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/tx"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+)
+
+// MsgPayForBlobs pays for the inclusion of a blob in the block.
+type MsgPayForBlobs struct {
+	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	// namespaces is a list of namespaces that the blobs are associated with. A
+	// namespace is a byte slice of length 33 where the first byte is the
+	// namespaceVersion and the subsequent 32 bytes are the namespaceId.
+	Namespaces [][]byte `protobuf:"bytes,2,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
+	BlobSizes  []uint32 `protobuf:"varint,3,rep,packed,name=blob_sizes,json=blobSizes,proto3" json:"blob_sizes,omitempty"`
+	// share_commitments is a list of share commitments (one per blob).
+	ShareCommitments [][]byte `protobuf:"bytes,4,rep,name=share_commitments,json=shareCommitments,proto3" json:"share_commitments,omitempty"`
+	// share_versions are the versions of the share format that the blobs
+	// associated with this message should use when included in a block. The
+	// share_versions specified must match the share_versions used to generate the
+	// share_commitment in this message.
+	ShareVersions []uint32 `protobuf:"varint,8,rep,packed,name=share_versions,json=shareVersions,proto3" json:"share_versions,omitempty"`
+}
+
+func BlobParser(strBlob string) {
+	mshdData := strBlob
+	//mshdData := "CukCCvwBCgIICxDXExiLzKqhBiIgt15j8w4iqD9lkEuRJczhlVsG3tlHi+oISts8kIK563UqIMViCX5x5AR3XqQWHbct2namhK0S3mWlbi7jmW4Mdi5/MiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABCIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUhTDILYFhkabkCP3V0Otp48a71Xmz1ogtAq6IQBZDFoZ9p25tryZZGd1uUF60yLwpy7TuT9gJnRiC29wdGlfOTAwMC0xEkIKQMfNoWhPmjyzRYPwPmyycvUGtjE5vZpdKRRmqhOjYuhV/7OcpEFEQDUBQveQjLVi5gY+oCD7h6WgYiBENNcsPA4aJAoiCiAgEQp0BAzJhsCQyitDVUlevSe65JhrHm8hsR12BDetmxIA"
+	//data := []byte(rawData)
+	//data2 := []byte("CsEDCvoBCgIICxDxggEY29aUogYiIJrcm/1daTM10s6KxZL4T7Vq3yWwvy09v07kT8sv4x+lKiD7PMxA0Ks60KXxMsu2Bx874AVd1zE7hweBDwxogP0iSDIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFIUcbn9oitZN6iGZQKlGRCAoPtInONaIClirK6jkvLDQt+eP5y37aoBEO1NN3MFEKBuu9X5eD6bYghjcmUtdGVzdBJCCkCzdlsvHuATjQIM9BRnc2Yw51NzDZi37BiE1kKmxQgL+KzMmhbgy0k9znl5CSq6cHtJqY2Aoqi7YGAPVBNLmcwGGn4KPQoUcbn9oitZN6iGZQKlGRCAoPtInOMSIgogmMtlhACBq/CfeKgVopz996FeDBotkEnRlJ38m9YQ4RcY6AcSPQoUcbn9oitZN6iGZQKlGRCAoPtInOMSIgogmMtlhACBq/CfeKgVopz996FeDBotkEnRlJ38m9YQ4RcY6AcSAA==")
+
+	decodedMshdData, err := base64.StdEncoding.DecodeString(mshdData)
+	if err != nil {
+		fmt.Println(err)
+	}
+	//fmt.Printf("Decoded text: %s\n", rawDecodedText)
+
+	var block types.Block
+	err = block.UnmarshalBinary(decodedMshdData)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("          =============== celestia-app blob (block data of dApp) =============")
+	fmt.Print(block, "\n\n")
+
+	fmt.Println("          =============== blob(block) details ====================")
+	fmt.Println(block.SignedHeader.AggregatorsHash.String())
+	fmt.Println(block.SignedHeader.AppHash.String())
+	fmt.Println(block.SignedHeader.ChainID())
+	fmt.Println(block.SignedHeader.ConsensusHash.String())
+	fmt.Println(block.SignedHeader.Header.ConsensusHash.String())
+	fmt.Println(block.SignedHeader.DataHash.String())
+	fmt.Println(block.SignedHeader.Height())
+	fmt.Println(block.SignedHeader.LastCommitHash.String())
+	fmt.Println(block.SignedHeader.LastHeaderHash.String())
+	fmt.Println(block.SignedHeader.LastResultsHash.String())
+	fmt.Println(block.SignedHeader.Time())
+	fmt.Println(block.SignedHeader.Validators.String())
+	fmt.Println(block.SignedHeader.Version.App)
+	fmt.Println(block.SignedHeader.Version.Block)
+	fmt.Println(block.Data.Evidence)
+	fmt.Println(block.Data.ToProto().GetEvidence())
+	fmt.Print(block.Data, "\n\n")
+
+	txs := block.Data.ToProto().GetTxs()
+
+	//var cdc codec.Codec
+	//interfaceRegistry := codectypes.NewInterfaceRegistry()
+	//marshaler := codec.NewProtoCodec(interfaceRegistry)
+
+	var bankSendTran banktypes.MsgSend
+
+	for _, txData := range txs {
+
+		var txRaw tx.TxRaw
+		err = txRaw.Unmarshal(txData)
+
+		var txBody tx.TxBody
+		err = txBody.Unmarshal(txRaw.BodyBytes)
+		msgs := txBody.GetMessages()
+		for _, msg := range msgs {
+			fmt.Println("          =============== tx ============================")
+			fmt.Println(string(msg.GetValue()))
+			bankSendTran.Unmarshal(msg.GetValue())
+			fmt.Println(bankSendTran.String())
+			fmt.Println(msg.GetTypeUrl())
+		}
+
+		var txAuth tx.AuthInfo
+		err = txAuth.Unmarshal(txRaw.AuthInfoBytes)
+		//signerinfos := txAuth.SignerInfos
+
+		//for _, signerinfo := range signerinfos {
+		//	acc := getAccountAddress(signerinfo.GetPublicKey().GetValue())
+		//	fmt.Println(acc)
+
+		//}
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	// GET 호출
+	resp, err := http.Get("http://54.200.185.48:26657/block")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer resp.Body.Close()
+
+	// 결과 출력
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%s\n", string(data))
+
+	// encodedTx := "CrkCCosBCogBCiAvY2VsZXN0aWEuYmxvYi52MS5Nc2dQYXlGb3JCbG9icxJkCi9jZWxlc3RpYTFxZXhsM251NjBud3ptMHlkZHN6Zm1ucXZtemVxYWU0emx6cHVuZhIIOPTkXTieZzUaAsYDIiB91+VclSra6CFTkFggPFpsHkp3Gy6a5lDV+JyZNmM6LEIBABJnClIKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiED9n09HThF6nvjRYGDk09A1+5CdDIho3/DNRSZkHgzqKoSBAoCCAEYmukIEhEKCwoEdXRpYRIDMTAwEKCNBhpA5n8YcpfH5hAXmvOXKelWRmLiQelKUP/QnyVEjMKwuu5vEMJ0QXdOxnREvZjBwaouQoq1SJir1uqbq53m5D4n6xIBBBoESU5EWA=="
+	// //encodedTx := "CrkCCosBCogBCiAvY2VsZXN0aWEuYmxvYi52MS5Nc2dQYXlGb3JCbG9icxJkCi9jZWxlc3RpYTFxZXhsM251NjBud3ptMHlkZHN6Zm1ucXZtemVxYWU0emx6cHVuZhIIOPTkXTieZzUaAsYDIiB91+VclSra6CFTkFggPFpsHkp3Gy6a5lDV+JyZNmM6LEIBABJnClIKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiED9n09HThF6nvjRYGDk09A1+5CdDIho3/DNRSZkHgzqKoSBAoCCAEYmukIEhEKCwoEdXRpYRIDMTAwEKCNBhpA5n8YcpfH5hAXmvOXKelWRmLiQelKUP/QnyVEjMKwuu5vEMJ0QXdOxnREvZjBwaouQoq1SJir1uqbq53m5D4n6xIBBBoESU5EWA=="
+	// decodedMshdTx, err := base64.StdEncoding.DecodeString(encodedTx)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// //"github.com/cosmos/cosmos-sdk/types/tx"
+	// // Tx, TxRaw, SignDoc
+	// var txRaw tx.TxRaw
+	// err = txRaw.Unmarshal(decodedMshdTx)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Println("          =============== tx ============================")
+	// fmt.Print(txRaw.String(), "\n\n")
+
+	// var txBody tx.TxBody
+	// err = txBody.Unmarshal(txRaw.BodyBytes)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Println(txBody)
+	//msgs := txBody.GetMessages()
+
+	//var cdc codec.Codec
+	// var pfbTran MsgPayForBlobs
+	// marshaler.UnmarshalInterface(txRaw.BodyBytes, &pfbTran)
+	// fmt.Println(pfbTran)
+}
