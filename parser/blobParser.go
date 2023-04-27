@@ -20,7 +20,14 @@ func BlobParser(sBlob Blob, strCoreHeight string) {
 		fmt.Println(err)
 		return
 	}
+	if len(decodedMshdBlob) < 5 {
+		fmt.Println("decodedMshdBlob []byte length < 5")
+		return
+	}
 
+	// Height: 153061, TX: 1, BLOB: 1
+	// github.com/rollkit/rollkit@v0.7.4/types/serialization.go:27
+	// panic: runtime error: invalid memory address or nil pointer dereference
 	var block types.Block
 	err = block.UnmarshalBinary(decodedMshdBlob)
 	if err != nil {
@@ -84,6 +91,10 @@ func TxsParser(sBlob Blob, strCoreHeight string) {
 	decodedMshdBlob, err := base64.StdEncoding.DecodeString(mshdBlob)
 	if err != nil {
 		fmt.Println(err)
+		return
+	}
+	if len(decodedMshdBlob) < 5 {
+		fmt.Println("decodedMshdBlob []byte length < 5")
 		return
 	}
 	var block types.Block
