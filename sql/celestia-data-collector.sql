@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `blobs` (
   `tx_cnt` int unsigned NOT NULL DEFAULT '0',
   `blob_base64` varchar(4096) COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `nid_height` (`nid`, `height`),
+  UNIQUE KEY `nid_heightcore` (`nid`, `height_core`),
   KEY `nid` (`nid`),
   KEY `block_hash` (`block_hash`),
   KEY `height_core` (`height_core`)  

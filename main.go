@@ -8,7 +8,12 @@ import (
 	"strconv"
 	"time"
 
+	"celestia-data-collector/dbproc"
 	parser "celestia-data-collector/parser"
+)
+
+const (
+	CHECK_LATEST_HEIGHT_INTERVAL = 1000
 )
 
 func main() {
@@ -66,5 +71,50 @@ func main() {
 			}
 			//time.Sleep(time.Second)
 		} // end for statement
-	} // end if os.Args[1] == "recover" {
+	} else {
+		// get latest core-height stored in db
+		height := dbproc.GetLatestHeightFromDB()
+		fmt.Println("LATEST HEIGHT STORED IN DB: ", height)
+
+		curHeight := 0
+		prevHeight := 0
+		for {
+			// GET request
+			resp, err := http.Get("http://54.200.185.48:26657/block")
+			if err != nil {
+				fmt.Println(err)
+			}
+			defer resp.Body.Close()
+
+			// print result
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			sQueryBlockResult := parser.UnmarshalBlock(data)
+			curHeight, err = strconv.Atoi(sQueryBlockResult.Result.Block.Header.Height)
+			if err != nil {
+				fmt.Println(err)
+			}
+			if curHeight == prevHeight {
+				time.Sleep(time.Millisecond * CHECK_LATEST_HEIGHT_INTERVAL)
+				continue
+			}
+			prevHeight = curHeight
+
+			// store 'block' of celestia-app
+			parser.BlockParser(sQueryBlockResult)
+
+			for _, blob := range sQueryBlockResult.Result.Block.Data.Blobs {
+				//fmt.Printf("================= %s ==============\n", sQueryBlockResult.Result.Block.Header.Height)
+				// store each 'blobs' of target block
+				parser.BlobParser(blob, sQueryBlockResult.Result.Block.Header.Height)
+
+				// blob is a block of a certain dApp, so blob.Data need to be seperated to extract Transactions of dApp.
+				// store each 'transactions' of target dApp at certain block.
+				parser.TxsParser(blob, sQueryBlockResult.Result.Block.Header.Height)
+			}
+		} // end for statement
+	} // end if os.Args[1] == "recover"
 }

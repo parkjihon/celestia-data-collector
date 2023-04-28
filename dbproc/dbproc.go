@@ -115,6 +115,18 @@ func InsertRollupTx(row types.RollupTxRow) {
 	checkError(err)
 }
 
+func GetLatestHeightFromDB() (height int64) {
+	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/celestia-rollup-explorer")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.QueryRow("SELECT max(height) FROM core_blocks").Scan(&height)
+	checkError(err)
+	return
+}
+
 func checkError(err error) {
 	if err != nil {
 		fmt.Println(err)
