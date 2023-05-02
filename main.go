@@ -103,9 +103,6 @@ func main() {
 			}
 			prevHeight = curHeight
 
-			// store 'block' of celestia-app
-			parser.BlockParser(sQueryBlockResult)
-
 			for _, blob := range sQueryBlockResult.Result.Block.Data.Blobs {
 				//fmt.Printf("================= %s ==============\n", sQueryBlockResult.Result.Block.Header.Height)
 				// store each 'blobs' of target block
@@ -115,6 +112,9 @@ func main() {
 				// store each 'transactions' of target dApp at certain block.
 				parser.TxsParser(blob, sQueryBlockResult.Result.Block.Header.Height)
 			}
+
+			// store 'block' of celestia-app
+			parser.BlockParser(sQueryBlockResult)
 		} // end for statement
 	} // end if os.Args[1] == "recover"
 }
