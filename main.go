@@ -38,7 +38,7 @@ func main() {
 		}
 		for {
 			// GET request
-			resp, err := http.Get("http://54.200.185.48:26657/block?height=" + strconv.Itoa(cnt))
+			resp, err := http.Get("https://cel-cre.crescent.network:26657/block?height=" + strconv.Itoa(cnt))
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -80,7 +80,7 @@ func main() {
 		prevHeight := 0
 		for {
 			// GET request
-			resp, err := http.Get("http://54.200.185.48:26657/block")
+			resp, err := http.Get("https://cel-cre.crescent.network:26657/block")
 			if err != nil {
 				fmt.Println(err)
 			}

@@ -112,7 +112,7 @@ func BlobParser(strBlob string) {
 	}
 
 	// GET 호출
-	resp, err := http.Get("http://54.200.185.48:26657/block")
+	resp, err := http.Get("https://cel-cre.crescent.network:26657/block")
 	if err != nil {
 		fmt.Println(err)
 	}
