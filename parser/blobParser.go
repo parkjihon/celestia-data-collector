@@ -11,6 +11,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/rollkit/rollkit/types"
+	pb "github.com/rollkit/rollkit/types/pb/rollkit"
 )
 
 func BlobParser(sBlob Blob, strCoreHeight string) {
@@ -20,15 +21,15 @@ func BlobParser(sBlob Blob, strCoreHeight string) {
 		fmt.Println(err)
 		return
 	}
-	if len(mshdBlob) < 512 {
-		fmt.Println("decodedMshdBlob []byte length < 512. ", len(mshdBlob))
-		return
-	}
+	// if len(mshdBlob) < 512 {
+	// 	fmt.Println("decodedMshdBlob []byte length < 512. ", len(mshdBlob))
+	// 	return
+	// }
 	// Height: 153061, TX: 1, BLOB: 1
 	// github.com/rollkit/rollkit@v0.7.4/types/serialization.go:27
 	// panic: runtime error: invalid memory address or nil pointer dereference
 	var block types.Block
-	err = block.UnmarshalBinary(decodedMshdBlob)
+	err = UnmarshalBinary(&block, decodedMshdBlob)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -92,12 +93,12 @@ func TxsParser(sBlob Blob, strCoreHeight string) {
 		fmt.Println(err)
 		return
 	}
-	if len(mshdBlob) < 512 {
-		fmt.Println("decodedMshdBlob []byte length < 512")
-		return
-	}
+	// if len(mshdBlob) < 512 {
+	// 	fmt.Println("decodedMshdBlob []byte length < 512")
+	// 	return
+	// }
 	var block types.Block
-	err = block.UnmarshalBinary(decodedMshdBlob)
+	err = UnmarshalBinary(&block, decodedMshdBlob)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -160,4 +161,15 @@ func TxsParser(sBlob Blob, strCoreHeight string) {
 		dbproc.InsertRollupTx(row)
 	}
 	return
+}
+
+// UnmarshalBinary decodes binary form of Block into object.
+func UnmarshalBinary(b *types.Block, data []byte) error {
+	var pBlock pb.Block
+	err := pBlock.Unmarshal(data)
+	if err != nil || &pBlock == nil {
+		return err
+	}
+	err = b.FromProto(&pBlock)
+	return err
 }
