@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 
 	"celestia-data-collector/dbproc"
@@ -167,8 +168,11 @@ func TxsParser(sBlob Blob, strCoreHeight string) {
 func UnmarshalBinary(b *types.Block, data []byte) error {
 	var pBlock pb.Block
 	err := pBlock.Unmarshal(data)
-	if err != nil || &pBlock == nil {
+	if err != nil {
 		return err
+	}
+	if &pBlock == nil || pBlock.Data == nil {
+		return errors.New("not block")
 	}
 	err = b.FromProto(&pBlock)
 	return err
