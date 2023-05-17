@@ -15,6 +15,7 @@ func InsertCoreBlock(row types.CoreBlocksRow) {
 	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/celestia-rollup-explorer")
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 	defer db.Close()
 
@@ -57,6 +58,7 @@ func InsertBlobs(row types.BlobsRow) {
 	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/celestia-rollup-explorer")
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 	defer db.Close()
 
@@ -90,6 +92,7 @@ func InsertRollupTx(row types.RollupTxRow) {
 	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/celestia-rollup-explorer")
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 	defer db.Close()
 
@@ -119,6 +122,7 @@ func GetLatestHeightFromDB() (height int64) {
 	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/celestia-rollup-explorer")
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 	defer db.Close()
 
